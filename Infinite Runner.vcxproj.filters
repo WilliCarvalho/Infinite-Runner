@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{E9C7FDCE-D52A-8D73-7EB0-C5296AF258F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{21EB8090-0D4E-1035-B6D3-48EBA215DCB7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Resource Files">
+      <UniqueIdentifier>{BAF00917-2652-E724-AFBF-2DD71B201EE4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Resource Files\2DTextures">
+      <UniqueIdentifier>{C37E9DF3-AFA4-675A-98EA-EC2584AF8C26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Resource Files\2DTextures\Background">
+      <UniqueIdentifier>{F2395695-5E54-B936-A776-C9CA13D0E03D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Resource Files\2DTextures\Character">
+      <UniqueIdentifier>{5F6CC283-4BE9-B5C6-7466-B6DA6042525A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Resource Files\2DTextures\Enemy">
+      <UniqueIdentifier>{3063A1B4-1C4A-63AC-C59A-C9C9B160DC12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Resource Files\2DTextures\Sprites">
+      <UniqueIdentifier>{3C98C99D-28EA-A08D-1109-DE9DFDF9B976}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Resource Files\2DTextures\Sprites\Textures">
+      <UniqueIdentifier>{8F6D1BD0-FBA8-7B93-049E-F822705800C4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Resource Files\2DTextures\Sprites\Textures\Decor">
+      <UniqueIdentifier>{CB2AAB36-3747-9D27-001F-0A956CFA06E9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Resource Files\2DTextures\Sprites\Textures\Tiles">
+      <UniqueIdentifier>{5F09CF37-CB25-C128-94FD-2D9600D92AEA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows Resource Files">
+      <UniqueIdentifier>{6B659E97-575F-C7E9-40CC-5DFA2C652D56}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\resource_dir.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\icon.ico">
+      <Filter>Windows Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\application.rc">
+      <Filter>Windows Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\2DTextures\Background\Background1.png">
+      <Filter>Game Resource Files\2DTextures\Background</Filter>
+    </Image>
+    <Image Include="resources\2DTextures\Background\Background2.png">
+      <Filter>Game Resource Files\2DTextures\Background</Filter>
+    </Image>
+    <Image Include="resources\2DTextures\Background\Background3.png">
+      <Filter>Game Resource Files\2DTextures\Background</Filter>
+    </Image>
+    <Image Include="resources\2DTextures\Background\Background4.png">
+      <Filter>Game Resource Files\2DTextures\Background</Filter>
+    </Image>
+    <Image Include="resources\2DTextures\Background\Background5.png">
+      <Filter>Game Resource Files\2DTextures\Background</Filter>
+    </Image>
+    <Image Include="resources\2DTextures\Character\CharacterSheet.png">
+      <Filter>Game Resource Files\2DTextures\Character</Filter>
+    </Image>
+    <Image Include="resources\2DTextures\Enemy\EnemySheet.png">
+      <Filter>Game Resource Files\2DTextures\Enemy</Filter>
+    </Image>
+    <Image Include="resources\2DTextures\Sprites\Textures\Decor\Decor.png">
+      <Filter>Game Resource Files\2DTextures\Sprites\Textures\Decor</Filter>
+    </Image>
+    <Image Include="resources\2DTextures\Sprites\Textures\Tiles\DirtBackgroundTiles.png">
+      <Filter>Game Resource Files\2DTextures\Sprites\Textures\Tiles</Filter>
+    </Image>
+    <Image Include="resources\2DTextures\Sprites\Textures\Tiles\DirtTiles.png">
+      <Filter>Game Resource Files\2DTextures\Sprites\Textures\Tiles</Filter>
+    </Image>
+    <Image Include="resources\2DTextures\Sprites\Textures\Tiles\GrassTiles.png">
+      <Filter>Game Resource Files\2DTextures\Sprites\Textures\Tiles</Filter>
+    </Image>
+    <Image Include="resources\2DTextures\Sprites\Textures\Tiles\SpikeTiles.png">
+      <Filter>Game Resource Files\2DTextures\Sprites\Textures\Tiles</Filter>
+    </Image>
+    <Image Include="resources\wabbit_alpha.png">
+      <Filter>Game Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
