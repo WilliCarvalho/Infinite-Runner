@@ -8,7 +8,6 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 */
 
 #include "raylib.h"
-
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
 
 int main()
@@ -18,21 +17,25 @@ int main()
 
 	InitWindow(windowWidth, windowHeight, "Infinite Runner do Wilzin");
 
-	//rectangle dimentions
-	const int width = 50;
-	const int height = 80;
-
-	//Environment Data
-	int floorPos = windowHeight - height;
-	const int gravityVelocity = 1;
 
 	
 	//PLayer Data
-	int playerPosY = floorPos;
-	int YVelocity = 0;
+	Texture2D PlayerTexture = LoadTexture("2DTexturesCharacter/CharacterSheet.png");
+	Rectangle playerRectangle;
+	playerRectangle.width = PlayerTexture.width / 4;
+	playerRectangle.height = PlayerTexture.height / 6;
+	playerRectangle.x = 0;
+	playerRectangle.y = 0;
+	Vector2 playerPos;
+	playerPos.x = windowWidth/2 - playerRectangle.width/2;
+	playerPos.y = windowHeight - playerRectangle.height;
 	int jumpForce = -20;
+	int yVelocity = 0;
 	bool isInAir = false;
 
+	//Environment Data
+	int floorPos = windowHeight - playerRectangle.height;
+	const int gravityVelocity = 1;
 
 
 	SetTargetFPS(60);
@@ -43,85 +46,31 @@ int main()
 		ClearBackground(GREEN);
 
 
-		if (playerPosY >= floorPos)
+		if (playerPos.y >= floorPos)
 		{
 			//is in the ground
-			YVelocity = 0;
+			yVelocity = 0;
 			isInAir = false;
 		}
 		else
 		{
 			//Is in the air
-			YVelocity += gravityVelocity;
+			yVelocity += gravityVelocity;
 			isInAir = true;
 		}
 
 		if (IsKeyPressed(KEY_SPACE) && !isInAir)
 		{
-			YVelocity += jumpForce;
+			yVelocity += jumpForce;
 		}
 
-		playerPosY += YVelocity;
+		playerPos.y += yVelocity;
 
-
-		DrawRectangle(windowWidth / 2, playerPosY, width, height, YELLOW);
+		DrawTextureRec(PlayerTexture, playerRectangle, playerPos, WHITE);
 
 		EndDrawing();
 	}
-
+	UnloadTexture(PlayerTexture);
 	CloseWindow();
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-//int main ()
-//{
-//	// Tell the window to use vsync and work on high DPI displays
-//	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
-//
-//	// Create the window and OpenGL context
-//	InitWindow(800, 600, "Hello Raylib");
-//
-//	// Utility function from resource_dir.h to find the resources folder and set it as the current working directory so we can load from it
-//	SearchAndSetResourceDir("resources");
-//
-//	// Load a texture from the resources directory
-//	Texture wabbit = LoadTexture("wabbit_alpha.png");
-//	
-//	// game loop
-//	while (!WindowShouldClose())		// run the loop until the user presses ESCAPE or presses the Close button on the window
-//	{
-//		// drawing
-//		BeginDrawing();
-//
-//		// Setup the back buffer for drawing (clear color and depth buffers)
-//		ClearBackground(BLACK);
-//
-//		// draw some text using the default font
-//		DrawText("Hello Raylib", 200,200,20,WHITE);
-//
-//		// draw our texture to the screen
-//		DrawTexture(wabbit, 400, 200, WHITE);
-//		
-//		// end the frame and get ready for the next one  (display frame, poll input, etc...)
-//		EndDrawing();
-//	}
-//
-//	// cleanup
-//	// unload our texture so it can be cleaned up
-//	UnloadTexture(wabbit);
-//
-//	// destroy the window and cleanup the OpenGL context
-//	CloseWindow();
-//	return 0;
-//}
