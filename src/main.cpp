@@ -22,11 +22,18 @@ int main()
 	const int width = 50;
 	const int height = 80;
 
+	//Environment Data
 	int floorPos = windowHeight - height;
+	const int gravityVelocity = 1;
+
+	
+	//PLayer Data
 	int playerPosY = floorPos;
 	int YVelocity = 0;
-	int jumpForce = -10;
-	const int gravityVelocity = 1;
+	int jumpForce = -20;
+	bool isInAir = false;
+
+
 
 	SetTargetFPS(60);
 	while (!WindowShouldClose())
@@ -40,14 +47,16 @@ int main()
 		{
 			//is in the ground
 			YVelocity = 0;
+			isInAir = false;
 		}
 		else
 		{
 			//Is in the air
 			YVelocity += gravityVelocity;
+			isInAir = true;
 		}
 
-		if (IsKeyPressed(KEY_SPACE))
+		if (IsKeyPressed(KEY_SPACE) && !isInAir)
 		{
 			YVelocity += jumpForce;
 		}
