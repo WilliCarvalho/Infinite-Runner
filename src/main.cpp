@@ -22,9 +22,11 @@ int main()
 	const int width = 50;
 	const int height = 80;
 
-	int posY = windowHeight - height;
+	int floorPos = windowHeight - height;
+	int playerPosY = floorPos;
+	int YVelocity = 0;
 	int jumpForce = -10;
-	int gravityVelocity = 10;
+	const int gravityVelocity = 1;
 
 	SetTargetFPS(60);
 	while (!WindowShouldClose())
@@ -33,16 +35,27 @@ int main()
 
 		ClearBackground(GREEN);
 
-		if (IsKeyDown(KEY_SPACE))
+
+		if (playerPosY >= floorPos)
 		{
-			posY += jumpForce;
+			//is in the ground
+			YVelocity = 0;
 		}
-		else if(posY <= windowHeight - height)
+		else
 		{
-			posY += gravityVelocity;
+			//Is in the air
+			YVelocity += gravityVelocity;
 		}
 
-		DrawRectangle(windowWidth / 2, posY, width, height, YELLOW);
+		if (IsKeyPressed(KEY_SPACE))
+		{
+			YVelocity += jumpForce;
+		}
+
+		playerPosY += YVelocity;
+
+
+		DrawRectangle(windowWidth / 2, playerPosY, width, height, YELLOW);
 
 		EndDrawing();
 	}
