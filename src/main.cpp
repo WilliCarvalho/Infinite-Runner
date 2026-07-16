@@ -4,7 +4,6 @@ This is an example main file for a simple raylib project.
 Use this as a starting point or replace it with your code.
 
 by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit https://creativecommons.org/publicdomain/zero/1.0/
-
 */
 
 #include "raylib.h"
@@ -17,10 +16,19 @@ int main()
 
 	InitWindow(windowWidth, windowHeight, "Infinite Runner do Wilzin");
 
+	SearchAndSetResourceDir("resources");
 
-	
+
+	//Resizing Texture because it was too small
+	Image img = LoadImage("2DTextures/Character/CharacterSheet.png");
+	int newWidth = static_cast<int>(img.width * 3);
+	int newHeight = static_cast<int>(img.height * 3);
+	ImageResizeNN(&img, newWidth, newHeight);
+
 	//PLayer Data
-	Texture2D PlayerTexture = LoadTexture("2DTexturesCharacter/CharacterSheet.png");
+	Texture2D PlayerTexture = LoadTextureFromImage(img);
+	UnloadImage(img);
+	
 	Rectangle playerRectangle;
 	playerRectangle.width = PlayerTexture.width / 4;
 	playerRectangle.height = PlayerTexture.height / 6;
@@ -32,6 +40,9 @@ int main()
 	int jumpForce = -20;
 	int yVelocity = 0;
 	bool isInAir = false;
+
+	TraceLog(LOG_INFO, "PLAYER RECTANGLE WIDTH: %f", playerRectangle.width);
+	TraceLog(LOG_INFO, "Player rectangle height: %f", playerRectangle.height);
 
 	//Environment Data
 	int floorPos = windowHeight - playerRectangle.height;
