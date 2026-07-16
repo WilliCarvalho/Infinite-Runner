@@ -9,10 +9,26 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 #include "raylib.h"
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
 
+struct AnimData
+{
+	Rectangle rectangle;
+	Vector2 position;
+	int currentFrame;
+	float updateTime;
+	float runningTime;
+};
+
+struct GameOBjectData
+{
+	Texture2D texture;
+	AnimData animData;
+	float moveSpeed;
+};
+
 int main()
 {
-	const int windowWidth = 800;
-	const int windowHeight = 600;
+	const int windowWidth = 512;
+	const int windowHeight = 380;
 
 	InitWindow(windowWidth, windowHeight, "Infinite Runner do Wilzin");
 
@@ -26,12 +42,15 @@ int main()
 
 	//Obstacle Data
 	Texture2D obstacleTexture = LoadTextureFromImage(img);
-	Rectangle obstacleRec{ 0.f,obstacleTexture.height / 3, obstacleTexture.width, obstacleTexture.height / 3 };
-	Vector2 obstaclePos{ windowWidth, windowHeight - obstacleRec.height };
+	UnloadImage(img);
+	AnimData obstacleAnim{
+		{ 0.f,obstacleTexture.height / 3, obstacleTexture.width, obstacleTexture.height / 3 }, //Rectangle
+		{windowWidth, windowHeight - obstacleTexture.height/3}, //position
+		0, //currentFrame
+		1.f / 8.f, //updateTime
+		0 //runningTime
+	};
 	int obstacleVelocity = -400;
-	int obstacleCurrentFrame = 1;
-	const float obstacleUpdateFrameTime = 1.f / 6.f;
-	float obstacleAnimRunningTime = 0.f;
 
 
 
@@ -45,24 +64,17 @@ int main()
 	Texture2D PlayerTexture = LoadTextureFromImage(img2);
 	UnloadImage(img2);
 
-	Rectangle playerRectangle;
-	playerRectangle.width = PlayerTexture.width / 4;
-	playerRectangle.height = PlayerTexture.height / 6;
-	//Rectangle position inside the spriteSheet (useful for animations)
-	playerRectangle.x = 0;
-	playerRectangle.y = 0;
+	AnimData playerAnim{
+		{0.f, 0.f, PlayerTexture.width / 4, PlayerTexture.height / 6},
+		{windowWidth / 2 - PlayerTexture.width / 4, windowHeight - (PlayerTexture.height / 6)},
+		0,
+		1.f / 12.f,
+		0.f
+	};
 
-	Vector2 playerPos;
-	playerPos.x = windowWidth / 2 - playerRectangle.width / 2;
-	playerPos.y = windowHeight - playerRectangle.height;
 	int jumpForce = -600; //in pixels/s
 	int yVelocity = 0;
 	bool isInAir = false;
-
-	//player animation frame data
-	int playerCurrentFrame = 0;
-	const float updateFrameTime = 1.f / 12.f; //Amount of time before update the animation (bigger numbers make animation faster)
-	float playerAnimRunningTime = 0;
 
 
 	//LOGS
@@ -70,7 +82,7 @@ int main()
 	//TraceLog(LOG_INFO, "Player rectangle height: %f", playerRectangle.height);
 
 	//Environment Data
-	int floorPos = windowHeight - playerRectangle.height;
+	int floorPos = windowHeight - playerAnim.rectangle.height;
 	const int gravityVelocity = 1'500; //acceleration due to gravity (pixels/s)/s
 	float deltaTime = 0;
 
@@ -84,7 +96,7 @@ int main()
 		ClearBackground(GREEN);
 
 
-		if (playerPos.y >= floorPos)
+		if (playerAnim.position.y >= floorPos)
 		{
 			//is in the ground
 			yVelocity = 0;
@@ -102,57 +114,59 @@ int main()
 			yVelocity += jumpForce;
 		}
 
-		playerPos.y += yVelocity * deltaTime;
+		playerAnim.position.y += yVelocity * deltaTime;
 
-		obstaclePos.x += obstacleVelocity * deltaTime;
+		obstacleAnim.position.x += obstacleVelocity * deltaTime;
 
-		if (obstaclePos.x < -obstacleRec.width)
+		if (obstacleAnim.position.x < -obstacleAnim.rectangle.width)
 		{
-			obstaclePos.x = windowWidth;
+			obstacleAnim.position.x = windowWidth;
 		}
 
 		//Update  player animation frame
-		playerAnimRunningTime += deltaTime;
-		if (playerAnimRunningTime >= updateFrameTime && isInAir == false)
+		playerAnim.runningTime += deltaTime;
+		if (playerAnim.runningTime >= playerAnim.updateTime && isInAir == false)
 		{
-			playerAnimRunningTime = 0.f;
-			playerRectangle.x = playerCurrentFrame * playerRectangle.width;
+			playerAnim.runningTime = 0.f;
+			playerAnim.rectangle.x = playerAnim.currentFrame * playerAnim.rectangle.width;
 			//Adjusting frame position Y based on currentFrame (the first frame of walking animation is alone on it's row
-			if (playerCurrentFrame >= 1)
+			if (playerAnim.currentFrame >= 1)
 			{
-				playerRectangle.y = PlayerTexture.height / 6;
+				playerAnim.rectangle.y = PlayerTexture.height / 6;
 			}
 			else
 			{
-				playerRectangle.y = 0;
+				playerAnim.rectangle.y = 0;
 			}
-			playerCurrentFrame++;
-			if (playerCurrentFrame > 4)
+			
+			playerAnim.currentFrame++;
+
+			if (playerAnim.currentFrame > 4)
 			{
-				playerCurrentFrame = 0;
+				playerAnim.currentFrame = 0;
 			}
 		}
 
 		//Update Obstacle animation frame
-		obstacleAnimRunningTime += deltaTime;
-		if (obstacleAnimRunningTime >= obstacleUpdateFrameTime)
+		obstacleAnim.runningTime += deltaTime;
+		if (obstacleAnim.runningTime >= obstacleAnim.updateTime)
 		{
-			obstacleAnimRunningTime = 0.f;
-			obstacleRec.y = obstacleCurrentFrame * obstacleRec.height;
+			obstacleAnim.runningTime = 0.f;
+			obstacleAnim.rectangle.y = obstacleAnim.currentFrame * obstacleAnim.rectangle.height;
 
-			obstacleCurrentFrame++;
+			obstacleAnim.currentFrame++;
 
-			if (obstacleCurrentFrame >= 3)
+			if (obstacleAnim.currentFrame >= 3)
 			{
-				obstacleCurrentFrame = 1;
+				obstacleAnim.currentFrame = 1;
 			}
 		}
 
 		//DrawPlayer
-		DrawTextureRec(PlayerTexture, playerRectangle, playerPos, WHITE);
+		DrawTextureRec(PlayerTexture, playerAnim.rectangle, playerAnim.position, WHITE);
 
 		//DrawObstacle
-		DrawTextureRec(obstacleTexture, obstacleRec, obstaclePos, WHITE);
+		DrawTextureRec(obstacleTexture, obstacleAnim.rectangle, obstacleAnim.position, WHITE);
 
 		EndDrawing();
 	}
