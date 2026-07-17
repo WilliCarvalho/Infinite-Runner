@@ -28,22 +28,22 @@ struct GameOBjectData
 };
 
 
-bool isOnGround(AnimData data, int windowHeight)
+bool IsOnGround(AnimData data, int windowHeight)
 {
 	return data.position.y >= windowHeight - data.rectangle.height;
 }
 
-AnimData updatePlayerAnimData(AnimData playerAnim, float deltaTime)
+AnimData UpdatePlayerAnimData(AnimData playerAnim, float deltaTime, Texture2D playerTexture)
 {
 	playerAnim.runningTime += deltaTime;
-	if (playerAnim.runningTime >= playerAnim.updateTime && isOnGround(playerAnim, GetScreenHeight()))
+	if (playerAnim.runningTime >= playerAnim.updateTime && IsOnGround(playerAnim, GetScreenHeight()))
 	{
 		playerAnim.runningTime = 0.f;
 		playerAnim.rectangle.x = playerAnim.currentFrame * playerAnim.rectangle.width;
 		//Adjusting frame position Y based on currentFrame (the first frame of walking animation is alone on it's row
 		if (playerAnim.currentFrame >= 1)
 		{
-			playerAnim.rectangle.y = playerAnim.rectangle.width;
+			playerAnim.rectangle.y = playerTexture.height / 6;
 		}
 		else
 		{
@@ -61,7 +61,7 @@ AnimData updatePlayerAnimData(AnimData playerAnim, float deltaTime)
 	return playerAnim;
 }
 
-AnimData updateObstacleAnimData(AnimData obstacle, float deltaTime)
+AnimData UpdateObstacleAnimData(AnimData obstacle, float deltaTime)
 {
 	/*if (obstacle.position.x < -obstacle.rectangle.width)
 	{
@@ -85,6 +85,25 @@ AnimData updateObstacleAnimData(AnimData obstacle, float deltaTime)
 	return obstacle;
 }
 
+void DrawBackground(Texture2D texture, float drawPosition)
+{
+	Vector2 background1Pos(drawPosition, 0.f);
+	DrawTextureEx(texture, background1Pos, 0.f, 2.f, WHITE);
+	Vector2 background2Pos(drawPosition + texture.width * 2, 0.f);
+	DrawTextureEx(texture, background2Pos, 0.f, 2.f, WHITE);
+}
+
+Texture2D ResizeTexture(const char *fileName, int newSize)
+{
+	Image img = LoadImage(fileName);
+	int newWidth = static_cast<int>(img.width * newSize);
+	int newHeight = static_cast<int>(img.height * newSize);
+	ImageResizeNN(&img, newWidth, newHeight);
+	Texture2D resizedTexture = LoadTextureFromImage(img);
+	UnloadImage(img);
+	return resizedTexture;
+}
+
 int main()
 {
 	const int windowWidth = 640;
@@ -94,15 +113,9 @@ int main()
 
 	SearchAndSetResourceDir("resources");
 
-	//Resizing Obstacle Texture because it was too small
-	Image img = LoadImage("2DTextures/Enemy/EnemySheet.png");
-	int newWidth = static_cast<int>(img.width * 4);
-	int newHeight = static_cast<int>(img.height * 4);
-	ImageResizeNN(&img, newWidth, newHeight);
 
 	//Obstacle Data
-	Texture2D obstacleTexture = LoadTextureFromImage(img);
-	UnloadImage(img);
+	Texture2D obstacleTexture = ResizeTexture("2DTextures/Enemy/EnemySheet.png", 4); //Resizing Obstacle Texture because it was too small
 	int obstacleVelocity = -400;
 
 	AnimData obstacles[6];
@@ -120,16 +133,8 @@ int main()
 		obstacles[i].runningTime = 0.f;
 	}
 
-
-	//Resizing Player Texture because it was too small
-	Image img2 = LoadImage("2DTextures/Character/CharacterSheet.png");
-	int newWidth2 = static_cast<int>(img2.width * 4);
-	int newHeight2 = static_cast<int>(img2.height * 4);
-	ImageResizeNN(&img2, newWidth2, newHeight2);
-
 	//PLayer Data
-	Texture2D PlayerTexture = LoadTextureFromImage(img2);
-	UnloadImage(img2);
+	Texture2D PlayerTexture = ResizeTexture("2DTextures/Character/CharacterSheet.png", 4);
 	AnimData playerAnim{
 		{0.f, 0.f, PlayerTexture.width / 4, PlayerTexture.height / 6},
 		{windowWidth / 2 - PlayerTexture.width / 4, windowHeight - (PlayerTexture.height / 6)},
@@ -150,8 +155,21 @@ int main()
 	const int gravityVelocity = 1'500; //acceleration due to gravity (pixels/s)/s
 	float deltaTime;
 	Texture2D backgroundTexture = LoadTexture("2DTextures/background/Background5.png");
+	Texture2D midgroundTexture = LoadTexture("2DTextures/background/Background3.png");
+	Texture2D foregroundTexture = LoadTexture("2DTextures/background/Background2.png");
+	Texture2D cloudTexture = LoadTexture("2DTextures/background/Background4.png");
 	float backgroundPosX = 0.f;
+	float midgroundPosX = 0.f;
+	float foregroundPosX = 0.f;
+	float cloudPosX = 0.f;
 
+	Texture2D finishLineTexture = ResizeTexture("2DTextures/Sprites/Textures/Decor/Decor.png", 3);;
+	Rectangle spritePosition{ 0.f, 45.f * 3, 26.f * 3, 50.f * 3 };
+	Vector2 finishLinePosition{ obstacles[std::size(obstacles) - 1].position.x + 500, windowHeight - spritePosition.height};
+	
+
+
+	//GAME LOOP
 	SetTargetFPS(60);
 	while (!WindowShouldClose())
 	{
@@ -161,19 +179,37 @@ int main()
 		ClearBackground(GREEN);
 
 		backgroundPosX -= 20.f * deltaTime;
+		midgroundPosX -= 40.f * deltaTime;
+		foregroundPosX -= 80.f * deltaTime;
+		cloudPosX -= 35.f * deltaTime;
 		if (backgroundPosX <= -backgroundTexture.width * 2)
 		{
 			backgroundPosX = 0.f;
 		}
 
-		//draw background
-		Vector2 background1Pos(backgroundPosX, 0.f);
-		DrawTextureEx(backgroundTexture, background1Pos, 0.f, 2.f, WHITE);
-		Vector2 background2Pos(backgroundPosX + backgroundTexture.width * 2, 0.f);
-		DrawTextureEx(backgroundTexture, background2Pos, 0.f, 2.f, WHITE);
+		if (midgroundPosX <= -midgroundTexture.width * 2)
+		{
+			midgroundPosX = 0.f;
+		}
+
+		if (foregroundPosX <= -foregroundTexture.width *2)
+		{
+			foregroundPosX = 0.f;
+		}
+
+		if (cloudPosX <= -cloudTexture.width * 2)
+		{
+			cloudPosX = 0.f;
+		}
+
+		//draw backgrounds
+		DrawBackground(backgroundTexture, backgroundPosX);
+		DrawBackground(midgroundTexture, midgroundPosX);
+		DrawBackground(foregroundTexture, foregroundPosX);
+		DrawBackground(cloudTexture, cloudPosX);
 
 
-		if (isOnGround(playerAnim, windowHeight))
+		if (IsOnGround(playerAnim, windowHeight))
 		{
 			//is in the ground
 			yVelocity = 0;
@@ -195,26 +231,33 @@ int main()
 		playerAnim.position.y += yVelocity * deltaTime;
 
 		//Update  player animation frame
-		
+		playerAnim = UpdatePlayerAnimData(playerAnim, deltaTime, PlayerTexture);
 
 		//Update Obstacles
 		for (int i = 0; i < std::size(obstacles); i++)
 		{
 			obstacles[i].position.x += obstacleVelocity * deltaTime;
-			obstacles[i] = updateObstacleAnimData(obstacles[i], deltaTime);
+			obstacles[i] = UpdateObstacleAnimData(obstacles[i], deltaTime);
 			//DrawObstacle
 			DrawTextureRec(obstacleTexture, obstacles[i].rectangle, obstacles[i].position, WHITE);
 		}
 
+		finishLinePosition.x += obstacleVelocity * deltaTime;
+
+		//Draw FinishLine
+		DrawTextureRec(finishLineTexture, spritePosition, finishLinePosition, WHITE);
+
 		//DrawPlayer
 		DrawTextureRec(PlayerTexture, playerAnim.rectangle, playerAnim.position, WHITE);
-
 
 		EndDrawing();
 	}
 	UnloadTexture(PlayerTexture);
 	UnloadTexture(obstacleTexture);
 	UnloadTexture(backgroundTexture);
+	UnloadTexture(midgroundTexture);
+	UnloadTexture(foregroundTexture);
+	UnloadTexture(cloudTexture);
 	CloseWindow();
 	return 0;
 }
