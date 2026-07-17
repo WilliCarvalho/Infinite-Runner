@@ -87,8 +87,8 @@ AnimData updateObstacleAnimData(AnimData obstacle, float deltaTime)
 
 int main()
 {
-	const int windowWidth = 512;
-	const int windowHeight = 380;
+	const int windowWidth = 640;
+	const int windowHeight = 360;
 
 	InitWindow(windowWidth, windowHeight, "Infinite Runner do Wilzin");
 
@@ -112,7 +112,7 @@ int main()
 		obstacles[i].rectangle.x = 0.f;
 		obstacles[i].rectangle.y = obstacleTexture.height / 3;
 		obstacles[i].rectangle.width = obstacleTexture.width;
-		obstacles[i].rectangle.height = windowHeight - obstacleTexture.height / 3;
+		obstacles[i].rectangle.height = obstacleTexture.height / 3;
 		obstacles[i].position.x = windowWidth + (300 * i);
 		obstacles[i].position.y = windowHeight - obstacleTexture.height / 3;
 		obstacles[i].currentFrame = 0;
@@ -130,7 +130,6 @@ int main()
 	//PLayer Data
 	Texture2D PlayerTexture = LoadTextureFromImage(img2);
 	UnloadImage(img2);
-
 	AnimData playerAnim{
 		{0.f, 0.f, PlayerTexture.width / 4, PlayerTexture.height / 6},
 		{windowWidth / 2 - PlayerTexture.width / 4, windowHeight - (PlayerTexture.height / 6)},
@@ -138,7 +137,6 @@ int main()
 		1.f / 12.f,
 		0.f
 	};
-
 	int jumpForce = -600; //in pixels/s
 	int yVelocity = 0;
 	bool isInAir = false;
@@ -149,10 +147,10 @@ int main()
 	//TraceLog(LOG_INFO, "OBATACLE x POSITION 2: %f", obstacles[1].position.x);
 
 	//Environment Data
-	int floorPos = windowHeight - playerAnim.rectangle.height;
 	const int gravityVelocity = 1'500; //acceleration due to gravity (pixels/s)/s
-	float deltaTime = 0;
-
+	float deltaTime;
+	Texture2D backgroundTexture = LoadTexture("2DTextures/background/Background5.png");
+	float backgroundPosX = 0.f;
 
 	SetTargetFPS(60);
 	while (!WindowShouldClose())
@@ -162,11 +160,24 @@ int main()
 
 		ClearBackground(GREEN);
 
+		backgroundPosX -= 20.f * deltaTime;
+		if (backgroundPosX <= -backgroundTexture.width * 2)
+		{
+			backgroundPosX = 0.f;
+		}
+
+		//draw background
+		Vector2 background1Pos(backgroundPosX, 0.f);
+		DrawTextureEx(backgroundTexture, background1Pos, 0.f, 2.f, WHITE);
+		Vector2 background2Pos(backgroundPosX + backgroundTexture.width * 2, 0.f);
+		DrawTextureEx(backgroundTexture, background2Pos, 0.f, 2.f, WHITE);
+
 
 		if (isOnGround(playerAnim, windowHeight))
 		{
 			//is in the ground
 			yVelocity = 0;
+			playerAnim.position.y = windowHeight - (PlayerTexture.height / 6);
 			isInAir = false;
 		}
 		else
@@ -203,6 +214,7 @@ int main()
 	}
 	UnloadTexture(PlayerTexture);
 	UnloadTexture(obstacleTexture);
+	UnloadTexture(backgroundTexture);
 	CloseWindow();
 	return 0;
 }
