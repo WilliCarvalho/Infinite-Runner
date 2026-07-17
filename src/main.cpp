@@ -7,7 +7,9 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 */
 
 #include "raylib.h"
-#include "resource_dir.h"	// utility header for SearchAndSetResourceDir
+#include "resource_dir.h" // utility header for SearchAndSetResourceDir
+#include <iostream>
+#include <iterator>
 
 struct AnimData
 {
@@ -24,6 +26,64 @@ struct GameOBjectData
 	AnimData animData;
 	float moveSpeed;
 };
+
+
+bool isOnGround(AnimData data, int windowHeight)
+{
+	return data.position.y >= windowHeight - data.rectangle.height;
+}
+
+AnimData updatePlayerAnimData(AnimData playerAnim, float deltaTime)
+{
+	playerAnim.runningTime += deltaTime;
+	if (playerAnim.runningTime >= playerAnim.updateTime && isOnGround(playerAnim, GetScreenHeight()))
+	{
+		playerAnim.runningTime = 0.f;
+		playerAnim.rectangle.x = playerAnim.currentFrame * playerAnim.rectangle.width;
+		//Adjusting frame position Y based on currentFrame (the first frame of walking animation is alone on it's row
+		if (playerAnim.currentFrame >= 1)
+		{
+			playerAnim.rectangle.y = playerAnim.rectangle.width;
+		}
+		else
+		{
+			playerAnim.rectangle.y = 0;
+		}
+
+		playerAnim.currentFrame++;
+
+		if (playerAnim.currentFrame > 4)
+		{
+			playerAnim.currentFrame = 0;
+		}
+	}
+
+	return playerAnim;
+}
+
+AnimData updateObstacleAnimData(AnimData obstacle, float deltaTime)
+{
+	/*if (obstacle.position.x < -obstacle.rectangle.width)
+	{
+		obstacle.position.x = windowWidth;
+	}*/
+
+	//Update Obstacle animation frame
+	obstacle.runningTime += deltaTime;
+	if (obstacle.runningTime >= obstacle.updateTime)
+	{
+		obstacle.runningTime = 0.f;
+		obstacle.rectangle.y = obstacle.currentFrame * obstacle.rectangle.height;
+
+		obstacle.currentFrame++;
+
+		if (obstacle.currentFrame >= 3)
+		{
+			obstacle.currentFrame = 1;
+		}
+	}
+	return obstacle;
+}
 
 int main()
 {
@@ -43,15 +103,22 @@ int main()
 	//Obstacle Data
 	Texture2D obstacleTexture = LoadTextureFromImage(img);
 	UnloadImage(img);
-	AnimData obstacleAnim{
-		{ 0.f,obstacleTexture.height / 3, obstacleTexture.width, obstacleTexture.height / 3 }, //Rectangle
-		{windowWidth, windowHeight - obstacleTexture.height/3}, //position
-		0, //currentFrame
-		1.f / 8.f, //updateTime
-		0 //runningTime
-	};
 	int obstacleVelocity = -400;
 
+	AnimData obstacles[6];
+
+	for (int i = 0; i < std::size(obstacles); i++)
+	{
+		obstacles[i].rectangle.x = 0.f;
+		obstacles[i].rectangle.y = obstacleTexture.height / 3;
+		obstacles[i].rectangle.width = obstacleTexture.width;
+		obstacles[i].rectangle.height = windowHeight - obstacleTexture.height / 3;
+		obstacles[i].position.x = windowWidth + (300 * i);
+		obstacles[i].position.y = windowHeight - obstacleTexture.height / 3;
+		obstacles[i].currentFrame = 0;
+		obstacles[i].updateTime = 1.f / 8.f;
+		obstacles[i].runningTime = 0.f;
+	}
 
 
 	//Resizing Player Texture because it was too small
@@ -78,8 +145,8 @@ int main()
 
 
 	//LOGS
-	//TraceLog(LOG_INFO, "PLAYER RECTANGLE WIDTH: %f", playerRectangle.width);
-	//TraceLog(LOG_INFO, "Player rectangle height: %f", playerRectangle.height);
+	//TraceLog(LOG_INFO, "OBATACLE x POSITION 1: %f", obstacles[0].position.x);
+	//TraceLog(LOG_INFO, "OBATACLE x POSITION 2: %f", obstacles[1].position.x);
 
 	//Environment Data
 	int floorPos = windowHeight - playerAnim.rectangle.height;
@@ -96,7 +163,7 @@ int main()
 		ClearBackground(GREEN);
 
 
-		if (playerAnim.position.y >= floorPos)
+		if (isOnGround(playerAnim, windowHeight))
 		{
 			//is in the ground
 			yVelocity = 0;
@@ -116,57 +183,21 @@ int main()
 
 		playerAnim.position.y += yVelocity * deltaTime;
 
-		obstacleAnim.position.x += obstacleVelocity * deltaTime;
-
-		if (obstacleAnim.position.x < -obstacleAnim.rectangle.width)
-		{
-			obstacleAnim.position.x = windowWidth;
-		}
-
 		//Update  player animation frame
-		playerAnim.runningTime += deltaTime;
-		if (playerAnim.runningTime >= playerAnim.updateTime && isInAir == false)
+		
+
+		//Update Obstacles
+		for (int i = 0; i < std::size(obstacles); i++)
 		{
-			playerAnim.runningTime = 0.f;
-			playerAnim.rectangle.x = playerAnim.currentFrame * playerAnim.rectangle.width;
-			//Adjusting frame position Y based on currentFrame (the first frame of walking animation is alone on it's row
-			if (playerAnim.currentFrame >= 1)
-			{
-				playerAnim.rectangle.y = PlayerTexture.height / 6;
-			}
-			else
-			{
-				playerAnim.rectangle.y = 0;
-			}
-			
-			playerAnim.currentFrame++;
-
-			if (playerAnim.currentFrame > 4)
-			{
-				playerAnim.currentFrame = 0;
-			}
-		}
-
-		//Update Obstacle animation frame
-		obstacleAnim.runningTime += deltaTime;
-		if (obstacleAnim.runningTime >= obstacleAnim.updateTime)
-		{
-			obstacleAnim.runningTime = 0.f;
-			obstacleAnim.rectangle.y = obstacleAnim.currentFrame * obstacleAnim.rectangle.height;
-
-			obstacleAnim.currentFrame++;
-
-			if (obstacleAnim.currentFrame >= 3)
-			{
-				obstacleAnim.currentFrame = 1;
-			}
+			obstacles[i].position.x += obstacleVelocity * deltaTime;
+			obstacles[i] = updateObstacleAnimData(obstacles[i], deltaTime);
+			//DrawObstacle
+			DrawTextureRec(obstacleTexture, obstacles[i].rectangle, obstacles[i].position, WHITE);
 		}
 
 		//DrawPlayer
 		DrawTextureRec(PlayerTexture, playerAnim.rectangle, playerAnim.position, WHITE);
 
-		//DrawObstacle
-		DrawTextureRec(obstacleTexture, obstacleAnim.rectangle, obstacleAnim.position, WHITE);
 
 		EndDrawing();
 	}
