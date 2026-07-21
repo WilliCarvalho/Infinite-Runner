@@ -93,7 +93,7 @@ void DrawBackground(Texture2D texture, float drawPosition)
 	DrawTextureEx(texture, background2Pos, 0.f, 2.f, WHITE);
 }
 
-Texture2D ResizeTexture(const char *fileName, int newSize)
+Texture2D ResizeTexture(const char* fileName, int newSize)
 {
 	Image img = LoadImage(fileName);
 	int newWidth = static_cast<int>(img.width * newSize);
@@ -125,8 +125,8 @@ int main()
 		obstacles[i].rectangle.x = 0.f;
 		obstacles[i].rectangle.y = obstacleTexture.height / 3;
 		obstacles[i].rectangle.width = obstacleTexture.width;
-		obstacles[i].rectangle.height = obstacleTexture.height / 3;
-		obstacles[i].position.x = windowWidth + (300 * i);
+		obstacles[i].rectangle.height = (obstacleTexture.height / 3);
+		obstacles[i].position.x = windowWidth + (350 * i);
 		obstacles[i].position.y = windowHeight - obstacleTexture.height / 3;
 		obstacles[i].currentFrame = 0;
 		obstacles[i].updateTime = 1.f / 8.f;
@@ -142,7 +142,7 @@ int main()
 		1.f / 12.f,
 		0.f
 	};
-	int jumpForce = -600; //in pixels/s
+	int jumpForce = -700; //in pixels/s
 	int yVelocity = 0;
 	bool isInAir = false;
 
@@ -152,7 +152,7 @@ int main()
 	//TraceLog(LOG_INFO, "OBATACLE x POSITION 2: %f", obstacles[1].position.x);
 
 	//Environment Data
-	const int gravityVelocity = 1'500; //acceleration due to gravity (pixels/s)/s
+	const int gravityVelocity = 2'000; //acceleration due to gravity (pixels/s)/s
 	float deltaTime;
 	Texture2D backgroundTexture = LoadTexture("2DTextures/background/Background5.png");
 	Texture2D midgroundTexture = LoadTexture("2DTextures/background/Background3.png");
@@ -164,8 +164,11 @@ int main()
 	float cloudPosX = 0.f;
 
 	Texture2D finishLineTexture = ResizeTexture("2DTextures/Sprites/Textures/Decor/Decor.png", 3);;
-	Rectangle spritePosition{ 0.f, 45.f * 3, 26.f * 3, 50.f * 3 };
-	Vector2 finishLinePosition{ obstacles[std::size(obstacles) - 1].position.x + 500, windowHeight - spritePosition.height};
+	Rectangle finishLineRectangle{ 0.f, 45.f * 3, 26.f * 3, 50.f * 3 };
+	Vector2 finishLinePosition{ obstacles[std::size(obstacles) - 1].position.x + 500, windowHeight - finishLineRectangle.height };
+	
+	bool collidedWithPlayer = false;
+
 	
 
 
@@ -192,7 +195,7 @@ int main()
 			midgroundPosX = 0.f;
 		}
 
-		if (foregroundPosX <= -foregroundTexture.width *2)
+		if (foregroundPosX <= -foregroundTexture.width * 2)
 		{
 			foregroundPosX = 0.f;
 		}
@@ -237,18 +240,58 @@ int main()
 		for (int i = 0; i < std::size(obstacles); i++)
 		{
 			obstacles[i].position.x += obstacleVelocity * deltaTime;
-			obstacles[i] = UpdateObstacleAnimData(obstacles[i], deltaTime);
-			//DrawObstacle
-			DrawTextureRec(obstacleTexture, obstacles[i].rectangle, obstacles[i].position, WHITE);
+			obstacles[i] = UpdateObstacleAnimData(obstacles[i], deltaTime);			
+		}
+
+		//Collider Data
+		float playerPadding = 10;
+		Rectangle playerData{
+			playerAnim.position.x + playerPadding,
+			playerAnim.position.y + playerPadding,
+			playerAnim.rectangle.width - (playerPadding * 2),
+			playerAnim.rectangle.height - (playerPadding * 2)
+		};
+		
+		for (AnimData obstacle : obstacles)
+		{
+			float padding = 5;
+			Rectangle obstacleRec{
+				obstacle.position.x + padding,
+				obstacle.position.y + padding,
+				obstacle.rectangle.width - (padding * 2),
+				obstacle.rectangle.height - (padding * 2)
+			};
+
+			//Checking collision between player and obstacles
+			if (CheckCollisionRecs(obstacleRec, playerData))
+			{
+				collidedWithPlayer = true;
+			}
 		}
 
 		finishLinePosition.x += obstacleVelocity * deltaTime;
 
 		//Draw FinishLine
-		DrawTextureRec(finishLineTexture, spritePosition, finishLinePosition, WHITE);
-
-		//DrawPlayer
-		DrawTextureRec(PlayerTexture, playerAnim.rectangle, playerAnim.position, WHITE);
+		DrawTextureRec(finishLineTexture, finishLineRectangle, finishLinePosition, WHITE);
+		if (collidedWithPlayer == true)
+		{
+			DrawText("GAME OVER!", 200, windowHeight/2, 40, RED);
+		}
+		else if (finishLinePosition.x <= playerAnim.position.x)
+		{
+			DrawText("YOU WIN!!", 200, windowHeight / 2, 40, DARKGREEN);
+		}
+		else
+		{
+			//DrawPlayer
+			DrawTextureRec(PlayerTexture, playerAnim.rectangle, playerAnim.position, WHITE);
+			DrawText("Reach the finish line!", 180, 40, 24, BLACK);
+			for (AnimData obstacle : obstacles)
+			{
+				//DrawObstacle
+				DrawTextureRec(obstacleTexture, obstacle.rectangle, obstacle.position, WHITE);
+			}
+		}
 
 		EndDrawing();
 	}
